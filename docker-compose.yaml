@@ -1,0 +1,68 @@
+version: "3.8"
+
+services:
+  traefik-outside:
+    image: "traefik:v2.5.6"
+    container_name: traefik-outside
+    ports:
+      - "80:80"
+      - "443:443"
+    networks: 
+      - mtls
+    command:
+      - --providers.file.directory=/etc/traefik/conf
+    volumes:
+      - ./outside/traefik.yaml:/etc/traefik/traefik.yaml
+      - ./outside/config/:/etc/traefik/conf
+      - ./outside/certs:/etc/traefik/certs/
+  
+  traefik-inside:
+    image: "traefik:v2.5.6"
+    container_name: traefik-inside
+    volumes:
+      - ./inside/traefik.yaml:/etc/traefik/traefik.yaml
+      - ./inside/config/:/etc/traefik/conf
+      - ./inside/certs:/etc/traefik/certs/ 
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks: 
+      - mtls
+    command:
+      - "--providers.file.directory=/etc/traefik/conf"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`dashboard.127.0.0.1.nip.io`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
+      - "traefik.http.routers.dashboard.service=api@internal"
+    #ports:
+    #  - "80:80"
+    #  - "443:443"
+     
+  foo:
+    image: traefik/traefikee-webapp-demo:v2
+    command:
+      - -ascii
+      - -name=FOO
+    networks: 
+     - mtls
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.foo.rule=Host(`foo.127.0.0.1.nip.io`)"
+      - "traefik.http.routers.foo.entrypoints=websecure"
+      - "traefik.http.routers.foo.tls=true"
+      - "traefik.http.routers.foo.tls.options=mtls@file"
+
+  bar:
+    image: traefik/traefikee-webapp-demo:v2
+    command:
+      - -ascii
+      - -name=BAR
+    networks: 
+     - mtls
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bar.rule=Host(`bar.127.0.0.1.nip.io`)"
+      - "traefik.http.routers.bar.entrypoints=websecure"
+      - "traefik.http.routers.bar.tls=true"
+      - "traefik.http.routers.bar.tls.options=mtls@file"
+
+networks:
+  mtls:      

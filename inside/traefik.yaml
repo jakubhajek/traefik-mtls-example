@@ -1,0 +1,19 @@
+# --- inside/traefik.yaml
+
+api:
+  insecure: true
+  dashboard: true
+entryPoints:
+  web:
+    address: ":80"
+  websecure:  
+    address: ":443"
+
+providers:
+  file:
+    directory: /etc/traefik/conf
+  docker: 
+    exposedbydefault: false  
+
+log:
+  level: DEBUG    

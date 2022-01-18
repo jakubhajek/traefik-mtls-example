@@ -1,0 +1,15 @@
+
+# --- outside/config/dynamic.yaml
+tcp:
+  routers:
+    whoami:
+      rule: "HostSNI(`foo.127.0.0.1.nip.io`)"
+      service: traefik-inside-svc
+      tls:
+        passthrough: true
+
+  services:
+    traefik-inside-svc:
+      loadbalancer:
+        servers:
+          - address: "traefik-inside:443"

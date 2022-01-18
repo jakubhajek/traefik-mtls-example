@@ -1,0 +1,15 @@
+
+# --- inside/config/dynamic.yaml
+
+tls:
+  options:
+    mtls:
+      clientAuth:
+        caFiles:
+          - /etc/traefik/minica.pem
+        clientAuthType: RequireAndVerifyClientCert
+      sniStrict: true
+
+serversTransports:
+    mytransport:
+      serverName: "myhost"      
